@@ -19,5 +19,6 @@ public class Main {
         System.out.println("停表记录: " + watch.pin("吃完"));
         System.out.println("吃饭时间: " + watch.getPinInterval("开始吃饭", "吃完"));
         System.out.println("停表结束: " + watch.stop());
+        watch.restart();
     }
 }

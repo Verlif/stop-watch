@@ -103,7 +103,7 @@ public class Stopwatch {
     public synchronized long restart() {
         timeline.clear();
         pinNameList.clear();
-        process = Process.WORKING;
+        process = Process.READY;
         return start();
     }
 

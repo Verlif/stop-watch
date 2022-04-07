@@ -22,7 +22,7 @@ System.out.println("吃饭时间: " + watch.getLastInterval());
 System.out.println("停表结束: " + watch.stop());
 ```
 
-__注意__: 停表只有在
+__注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使用`restart`。
 
 ## 添加依赖
 
