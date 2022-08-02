@@ -5,6 +5,7 @@ import stopwatch.exception.WrongProcessException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Verlif
@@ -79,7 +80,7 @@ public class Stopwatch {
 
     public synchronized long pin(String pinName) {
         if (isWorking()) {
-            long time = System.currentTimeMillis();
+            long time = System.nanoTime();
             pinNameList.add(pinName);
             timeline.add(time);
             return time;
@@ -185,6 +186,16 @@ public class Stopwatch {
     }
 
     /**
+     * 获取前两次记录的间隔
+     *
+     * @return 前两次记录的间隔
+     */
+    public double getLastInterval(TimeUnit unit) {
+        long i = getLastInterval();
+        return turnToUnit(i, unit);
+    }
+
+    /**
      * 获取上一次记录到此刻的间隔
      *
      * @return 上一次记录到此刻的间隔
@@ -196,6 +207,16 @@ public class Stopwatch {
         } else {
             throw new WrongProcessException("No more record can be computed, You can start this to get a new record.");
         }
+    }
+
+    /**
+     * 获取上一次记录到此刻的间隔
+     *
+     * @return 上一次记录到此刻的间隔
+     */
+    public double getLastToNow(TimeUnit unit) {
+        long i = getLastToNow();
+        return turnToUnit(i, unit);
     }
 
     /**
@@ -213,6 +234,16 @@ public class Stopwatch {
     }
 
     /**
+     * 获取记录开始到此刻的间隔
+     *
+     * @return 停表开始到此刻的间隔
+     */
+    public double getStartToNow(TimeUnit unit) {
+        long i = getStartToNow();
+        return turnToUnit(i, unit);
+    }
+
+    /**
      * 获取记录开始到最后一次记录的间隔
      *
      * @return 停表开始到上一次记录的间隔
@@ -224,6 +255,16 @@ public class Stopwatch {
         } else {
             throw new WrongProcessException("Only working stopwatch has the whole interval.");
         }
+    }
+
+    /**
+     * 获取记录开始到最后一次记录的间隔
+     *
+     * @return 停表开始到上一次记录的间隔
+     */
+    public double getWholeInterval(TimeUnit unit) {
+        long i = getWholeInterval();
+        return turnToUnit(i, unit);
     }
 
     /**
@@ -245,6 +286,11 @@ public class Stopwatch {
         return t - f;
     }
 
+    public double getPinInterval(String from, String to, TimeUnit unit) {
+        long i = getPinInterval(from, to);
+        return turnToUnit(i, unit);
+    }
+
     /**
      * 获取pin时间间隔
      *
@@ -263,6 +309,44 @@ public class Stopwatch {
         return timeline;
     }
 
+    public ArrayList<Double> getTimeline(TimeUnit unit) {
+        ArrayList<Double> list = new ArrayList<>();
+        for (Long t : timeline) {
+            list.add(turnToUnit(t, unit));
+        }
+        return list;
+    }
+
+    /**
+     * 获取间隔时间线
+     */
+    public ArrayList<Long> getIntervalLine() {
+        ArrayList<Long> list = new ArrayList<>();
+        Long last = null;
+        for (Long t : timeline) {
+            if (last != null) {
+                list.add(t - last);
+            }
+            last = t;
+        }
+        return list;
+    }
+
+    /**
+     * 获取间隔时间线
+     */
+    public ArrayList<Double> getIntervalLine(TimeUnit unit) {
+        ArrayList<Double> list = new ArrayList<>();
+        Long last = null;
+        for (Long t : timeline) {
+            if (last != null) {
+                list.add(turnToUnit(t - last, unit));
+            }
+            last = t;
+        }
+        return list;
+    }
+
     public boolean isWorking() {
         return (process & Process.WORKING) > 0;
     }
@@ -273,6 +357,25 @@ public class Stopwatch {
 
     public boolean isStopped() {
         return (process & Process.STOP) > 0;
+    }
+
+    private double turnToUnit(long i, TimeUnit unit) {
+        switch (unit) {
+            case DAYS:
+                return i / 86400000000000D;
+            case HOURS:
+                return i / 3600000000000D;
+            case MINUTES:
+                return i / 60000000000D;
+            case SECONDS:
+                return i / 1000000000D;
+            case MILLISECONDS:
+                return i / 1000000D;
+            case MICROSECONDS:
+                return i / 1000D;
+            default:
+                return i;
+        }
     }
 
     public static Stopwatch start(String name) {

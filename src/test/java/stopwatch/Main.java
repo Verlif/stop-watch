@@ -1,5 +1,8 @@
 package stopwatch;
 
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Verlif
  * @version 1.0
@@ -8,17 +11,21 @@ package stopwatch;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        Stopwatch watch = Stopwatch.get("testWatch");
-        System.out.println("停表开始: " + watch.start());
+        Stopwatch watch1 = Stopwatch.get("testWatch");
+        Stopwatch watch2 = Stopwatch.get("testWatch2");
+        System.out.println("停表开始: " + watch1.start());
+        System.out.println("停表开始: " + watch2.start());
+        Thread.sleep(123);
+        System.out.println("停表记录: " + watch2.pin());
+        System.out.println("间隔时间: " + watch2.getLastInterval(TimeUnit.MILLISECONDS));
         Thread.sleep((long) (Math.random() * 1000));
-        System.out.println("停表记录: " + watch.pin());
-        System.out.println("间隔时间: " + watch.getLastInterval());
+        System.out.println("停表记录: " + watch2.pin("开始吃饭"));
         Thread.sleep((long) (Math.random() * 1000));
-        System.out.println("停表记录: " + watch.pin("开始吃饭"));
-        Thread.sleep((long) (Math.random() * 1000));
-        System.out.println("停表记录: " + watch.pin("吃完"));
-        System.out.println("吃饭时间: " + watch.getPinInterval("开始吃饭", "吃完"));
-        System.out.println("停表结束: " + watch.stop());
-        watch.restart();
+        System.out.println("停表记录: " + watch2.pin("吃完"));
+        System.out.println("吃饭时间: " + watch2.getPinInterval("开始吃饭", "吃完", TimeUnit.MILLISECONDS));
+        System.out.println("停表结束: " + watch2.stop());
+        System.out.println("打点时间：" + Arrays.toString(watch1.getTimeline(TimeUnit.MILLISECONDS).toArray()));
+        System.out.println("打点时间：" + Arrays.toString(watch2.getIntervalLine(TimeUnit.MILLISECONDS).toArray()));
+        watch1.restart();
     }
 }

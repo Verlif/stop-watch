@@ -9,17 +9,30 @@ __简单的停表__
 ```java
 Stopwatch watch = Stopwatch.get("testWatch");
 System.out.println("停表开始: " + watch.start());
-......
+Thread.sleep(123);
 System.out.println("停表记录: " + watch.pin());
-System.out.println("间隔时间: " + watch.getLastInterval());
-......
+System.out.println("间隔时间: " + watch.getLastInterval(TimeUnit.MILLISECONDS));
+Thread.sleep((long) (Math.random() * 1000));
 System.out.println("停表记录: " + watch.pin("开始吃饭"));
-......
+Thread.sleep((long) (Math.random() * 1000));
 System.out.println("停表记录: " + watch.pin("吃完"));
-System.out.println("吃饭时间: " + watch.getPinInterval("开始吃饭", "吃完"));
-// 上面一行代码也等效于下面一行代码
-System.out.println("吃饭时间: " + watch.getLastInterval());
+System.out.println("吃饭时间: " + watch.getPinInterval("开始吃饭", "吃完", TimeUnit.MILLISECONDS));
 System.out.println("停表结束: " + watch.stop());
+System.out.println("打点时间：" + Arrays.toString(watch.getIntervalLine(TimeUnit.MILLISECONDS).toArray()));
+watch.restart();
+```
+
+输出如下：
+
+```text
+停表开始: 1494107535848000
+停表记录: 1494107661364700
+间隔时间: 125.5167
+停表记录: 1494108176334400
+停表记录: 1494108683787000
+吃饭时间: 507.4526
+停表结束: 1494108683924800
+打点时间：[125.5167, 514.9697, 507.4526, 0.1378]
 ```
 
 __注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使用`restart`。
@@ -28,41 +41,45 @@ __注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使
 
 1. 添加Jitpack仓库源
 
-> maven
-> ```xml
-> <repositories>
->    <repository>
->        <id>jitpack.io</id>
->        <url>https://jitpack.io</url>
->    </repository>
-> </repositories>
-> ```
-
-> Gradle
-> ```text
-> allprojects {
->   repositories {
->       maven { url 'https://jitpack.io' }
->   }
-> }
-> ```
+    maven
+    
+    ```xml
+    <repositories>
+       <repository>
+           <id>jitpack.io</id>
+           <url>https://jitpack.io</url>
+       </repository>
+    </repositories>
+    ```
+    
+    Gradle
+    
+    ```text
+    allprojects {
+      repositories {
+          maven { url 'https://jitpack.io' }
+      }
+    }
+    ```
 
 2. 添加依赖
 
-> maven
-> ```xml
->    <dependencies>
->        <dependency>
->            <groupId>com.github.Verlif</groupId>
->            <artifactId>stopwatch</artifactId>
->            <version>1.0</version>
->        </dependency>
->    </dependencies>
-> ```
-
-> Gradle
-> ```text
-> dependencies {
->   implementation 'com.github.Verlif:stopwatch:1.0'
-> }
-> ```
+    maven
+    
+    ```xml
+       <dependencies>
+           <dependency>
+               <groupId>com.github.Verlif</groupId>
+               <artifactId>stopwatch</artifactId>
+               <version>2.0</version>
+           </dependency>
+       </dependencies>
+    ```
+    
+    Gradle
+    
+    ```text
+    dependencies {
+      implementation 'com.github.Verlif:stopwatch:2.0'
+    }
+    ```
