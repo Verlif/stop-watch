@@ -37,7 +37,31 @@ watch.restart();
 
 __注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使用`restart`。
 
+## 常用方法
+
+### Stopwatch.start(name)
+
+通过Stopwatch来启动停表，用于多个停表的处理。可通过`Stopwatch.get(name)`来获取对应停表。
+
+### pin
+
+主要的计时打点方法，使用`watch.pin`或`watch.pin(name)`来记录时间点。
+
+### getPinInterval
+
+获取打点`pin`的间隔时间，例如：
+
+- `watch.getPinInterval(2, TimeUnit.MILLISECONDS))` - 获取第二个pin点与上一个pin点之间的间隔时间
+- `watch.getPinInterval("吃饭", TimeUnit.MILLISECONDS))` - 获取名为`吃饭`的pin点与上一个pin点之间的间隔时间
+- `watch.getPinInterval("开始吃饭", "吃完", TimeUnit.MILLISECONDS))` - 获取名为`开始吃饭`的pin点与名为`吃完`的pin点之间的间隔时间
+
+### getIntervalLine
+
+获取所有pin点的间隔时间列表
+
 ## 添加依赖
+
+[![Release](https://jitpack.io/v/Verlif/stopwatch.svg)](https://jitpack.io/#Verlif/stopwatch)
 
 1. 添加Jitpack仓库源
 
@@ -71,7 +95,7 @@ __注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使
            <dependency>
                <groupId>com.github.Verlif</groupId>
                <artifactId>stopwatch</artifactId>
-               <version>2.0</version>
+               <version>版本号</version>
            </dependency>
        </dependencies>
     ```
@@ -80,6 +104,6 @@ __注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使
     
     ```text
     dependencies {
-      implementation 'com.github.Verlif:stopwatch:2.0'
+      implementation 'com.github.Verlif:stopwatch:版本号'
     }
     ```

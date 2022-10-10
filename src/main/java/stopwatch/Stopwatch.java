@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Verlif
  * @version 1.0
- * @date 2022/4/7 9:13
  */
 public class Stopwatch {
 
@@ -33,6 +32,16 @@ public class Stopwatch {
      * 停表状态
      */
     private int process;
+
+    /**
+     * 累计暂停时间
+     */
+    private long cumulative;
+
+    /**
+     * 临时时间
+     */
+    private long temp;
 
     public Stopwatch() {
         this.name = Thread.currentThread().getName();
@@ -64,7 +73,9 @@ public class Stopwatch {
      */
     public synchronized long start() {
         if (isReady()) {
-            process = Process.WORKING;
+            temp = System.nanoTime();
+            cumulative = 0;
+            process = Process.RUNNING;
             return pin();
         } else {
             throw new WrongProcessException("Only ready stopwatch can start!You can use reset or restart to clear records, then you can start.");
@@ -78,14 +89,44 @@ public class Stopwatch {
         return pin(null);
     }
 
+    /**
+     * 记录时间点并标记名称
+     */
     public synchronized long pin(String pinName) {
-        if (isWorking()) {
-            long time = System.nanoTime();
+        long time = -1;
+        if (isRunning()) {
+            time = System.nanoTime() - cumulative;
+        } else if (isPause()) {
+            time = temp - cumulative;
+        }
+        if (time > 0) {
             pinNameList.add(pinName);
             timeline.add(time);
             return time;
         } else {
-            throw new WrongProcessException("Only working stopwatch can pin!");
+            throw new WrongProcessException("Only running stopwatch can pin!");
+        }
+    }
+
+    /**
+     * 停表暂停
+     */
+    public synchronized void pause() {
+        // 仅在计时中生效
+        if (isRunning()) {
+            temp = System.nanoTime();
+            process = Process.PAUSE;
+        }
+    }
+
+    /**
+     * 停表继续
+     */
+    public synchronized void keep() {
+        // 仅在暂停时继续
+        if (isPause()) {
+            cumulative += System.nanoTime() - temp;
+            process = Process.RUNNING;
         }
     }
 
@@ -115,6 +156,8 @@ public class Stopwatch {
         timeline.clear();
         pinNameList.clear();
         process = Process.READY;
+        temp = 0;
+        cumulative = 0;
     }
 
     /**
@@ -229,7 +272,7 @@ public class Stopwatch {
         if (size > 0) {
             return System.currentTimeMillis() - timeline.get(0);
         } else {
-            throw new WrongProcessException("Only working stopwatch has the whole interval.");
+            throw new WrongProcessException("Only running stopwatch has the whole interval.");
         }
     }
 
@@ -253,7 +296,7 @@ public class Stopwatch {
         if (size > 0) {
             return timeline.get(size - 1) - timeline.get(0);
         } else {
-            throw new WrongProcessException("Only working stopwatch has the whole interval.");
+            throw new WrongProcessException("Only running stopwatch has the whole interval.");
         }
     }
 
@@ -286,8 +329,50 @@ public class Stopwatch {
         return t - f;
     }
 
+    /**
+     * 获取pin时间间隔
+     *
+     * @param from 开始的pin名
+     * @param to   截止的pin名
+     * @param unit 时间间隔
+     * @return pin的时间间隔；当from或是to任意一个pin名不存在时，返回-1；
+     */
     public double getPinInterval(String from, String to, TimeUnit unit) {
         long i = getPinInterval(from, to);
+        return turnToUnit(i, unit);
+    }
+
+    /**
+     * 获取pin距离上一次pin的间隔时间
+     *
+     * @param pin pin名
+     * @return 间隔时间
+     */
+    public long getPinInterval(String pin) {
+        long f = getPin(pin);
+        if (f == -1) {
+            return -1;
+        }
+        int i = pinNameList.indexOf(pin);
+        if (i < 1) {
+            return -1;
+        }
+        long t = getPin(i - 1);
+        if (t == -1) {
+            return -1;
+        }
+        return f - t;
+    }
+
+    /**
+     * 获取pin距离上一次pin的间隔时间
+     *
+     * @param pin  pin名
+     * @param unit 时间单位
+     * @return 间隔时间
+     */
+    public double getPinInterval(String pin, TimeUnit unit) {
+        long i = getPinInterval(pin);
         return turnToUnit(i, unit);
     }
 
@@ -305,16 +390,82 @@ public class Stopwatch {
         return timeline.get(to) - timeline.get(from);
     }
 
+    /**
+     * 获取pin时间间隔
+     *
+     * @param from 开始的pin序号
+     * @param to   截止的pin序号
+     * @param unit 时间单位
+     * @return pin的时间间隔；当from或是to任意一个pin序号不存在时，返回-1；
+     */
+    public double getPinInterval(int from, int to, TimeUnit unit) {
+        long i = getPinInterval(from, to);
+        return turnToUnit(i, unit);
+    }
+
+    /**
+     * 获取pin距离上一次pin的间隔时间
+     *
+     * @param pin pin序号
+     * @return 间隔时间
+     */
+    public long getPinInterval(int pin) {
+        long f = getPin(pin);
+        if (f == -1) {
+            return -1;
+        }
+        if (pin < 1) {
+            return -1;
+        }
+        long t = getPin(pin - 1);
+        if (t == -1) {
+            return -1;
+        }
+        return f - t;
+    }
+
+    /**
+     * 获取pin距离上一次pin的间隔时间
+     *
+     * @param pin  pin序号
+     * @param unit 时间单位
+     * @return 间隔时间
+     */
+    public double getPinInterval(int pin, TimeUnit unit) {
+        long i = getPinInterval(pin);
+        return turnToUnit(i, unit);
+    }
+
+    /**
+     * 获取原始时间线
+     *
+     * @return 原始时间线
+     */
     public ArrayList<Long> getTimeline() {
         return timeline;
     }
 
+    /**
+     * 获取原始时间线
+     *
+     * @param unit 时间单位
+     * @return 原始时间线
+     */
     public ArrayList<Double> getTimeline(TimeUnit unit) {
         ArrayList<Double> list = new ArrayList<>();
         for (Long t : timeline) {
             list.add(turnToUnit(t, unit));
         }
         return list;
+    }
+
+    /**
+     * 获取pin名列表
+     *
+     * @return pin名列表
+     */
+    public ArrayList<String> getPinNameList() {
+        return new ArrayList<>(pinNameList);
     }
 
     /**
@@ -347,8 +498,12 @@ public class Stopwatch {
         return list;
     }
 
-    public boolean isWorking() {
-        return (process & Process.WORKING) > 0;
+    public boolean isRunning() {
+        return (process & Process.RUNNING) > 0;
+    }
+
+    public boolean isPause() {
+        return (process & Process.PAUSE) > 0;
     }
 
     public boolean isReady() {
@@ -360,6 +515,9 @@ public class Stopwatch {
     }
 
     private double turnToUnit(long i, TimeUnit unit) {
+        if (i < 1) {
+            return i;
+        }
         switch (unit) {
             case DAYS:
                 return i / 86400000000000D;
@@ -378,12 +536,24 @@ public class Stopwatch {
         }
     }
 
+    /**
+     * 开始一个停表
+     *
+     * @param name 停表名称
+     * @return 对应名称的停表。若不存在此停表则创建此停表，并执行start后返回
+     */
     public static Stopwatch start(String name) {
         Stopwatch watch = get(name);
         watch.start();
         return watch;
     }
 
+    /**
+     * 获取停表
+     *
+     * @param name 获取的停表名称
+     * @return 对应名称的停表。若不存在此停表则创建此停表并返回
+     */
     public static Stopwatch get(String name) {
         synchronized (WATCH_MAP) {
             Stopwatch watch = WATCH_MAP.get(name);
@@ -395,20 +565,35 @@ public class Stopwatch {
         }
     }
 
+    /**
+     * 移除停表
+     *
+     * @param name 停表名称
+     * @return 移除的停表对象。没有此名称的停表则返回null
+     */
+    public static Stopwatch remove(String name) {
+        return WATCH_MAP.remove(name);
+    }
+
     private interface Process {
         /**
-         * 就绪状态，此状态下可以start和restart，不能pin和stop
+         * 就绪状态，此状态下可以start和restart，无法pin、pause、continue和stop
          */
         int READY = 1;
 
         /**
-         * 工作中，此状态下可以pin、stop和restart，start会无效
+         * 计时中，此状态下可以pin、pause、stop和restart，无法start和continue
          */
-        int WORKING = 1 << 1;
+        int RUNNING = 1 << 1;
 
         /**
-         * 结束状态，此状态下可以restart，不能start和pin
+         * 暂停中，此状态下可以restart、stop、pin和continue，无法start
          */
-        int STOP = 1 << 2;
+        int PAUSE = 1 << 2;
+
+        /**
+         * 结束状态，此状态下只允许restart
+         */
+        int STOP = 1 << 3;
     }
 }
