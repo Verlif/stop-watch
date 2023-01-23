@@ -2,7 +2,14 @@
 
 __简单的停表__
 
-异常简单的停表，主要是用于测试方法耗时什么的。
+异常简单的停表，主要是用于测试方法耗时什么的，就像现实的停表一样使用它。
+
+## 功能
+
+- 记录间隔时间
+- 停表暂停
+- 关键时间点标记
+- 计时单位转换
 
 ## 使用
 
@@ -43,6 +50,8 @@ __注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使
 
 通过Stopwatch来启动停表，用于多个停表的处理。可通过`Stopwatch.get(name)`来获取对应停表。
 
+当然，也可以直接`new Stopwatch()`。
+
 ### pin
 
 主要的计时打点方法，使用`watch.pin`或`watch.pin(name)`来记录时间点。
@@ -61,7 +70,7 @@ __注意__: 停表只有在`reset`之后才可以再次`start`，或是直接使
 
 ## 添加依赖
 
-[![Release](https://jitpack.io/v/Verlif/stopwatch.svg)](https://jitpack.io/#Verlif/stopwatch)
+__LastVersion__ : [![Release](https://jitpack.io/v/Verlif/stopwatch.svg)](https://jitpack.io/#Verlif/stopwatch)
 
 1. 添加Jitpack仓库源
 
